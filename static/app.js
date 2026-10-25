@@ -226,12 +226,23 @@ function maybeOfferWorkerAuth() {
   }
 }
 function openWorkerAuth(code) {
+  if (!els.workerAuthModal) {
+    if (els.donateModal) {
+      if (els.workerAuthError) els.workerAuthError.textContent = "";
+      refreshStats();
+      openModal("donateModal");
+      els.workerCodeInput?.focus();
+    }
+    toast(`Approve worker code ${formatCode(code)} from the Donate CPU modal.`, "success", 5200);
+    return;
+  }
   els.workerAuthCode.textContent = formatCode(code);
   els.workerAuthAccount.textContent = `@${currentUser.username}`;
   els.workerAuthError.textContent = "";
   openModal("workerAuthModal");
 }
 async function handleWorkerAuthDecision(allowed) {
+  if (!els.workerAuthCode) return;
   els.workerAuthError.textContent = "";
   const code = normalizeWorkerCode(els.workerAuthCode.textContent);
   closeModal("workerAuthModal");
@@ -252,6 +263,7 @@ async function handleManualApprove() {
     toast("Log in first — only account owners can authorize donors.", "info", 4200);
     return;
   }
+  if (!els.workerCodeInput) return;
   els.workerAuthError.textContent = "";
   const code = normalizeWorkerCode(els.workerCodeInput.value);
   if (code.length < 6) {
@@ -314,7 +326,12 @@ function syncBoard() {
 
 /* ---------------- Move handling ---------------- */
 async function onPlayerMove(orig, dest) {
-  if (!gameActive || thinking || gameOverShown) { syncBoard(); return; }
+  if (gameOverShown || thinking) { syncBoard(); return; }
+  if (!gameActive) {
+    syncBoard();
+    toast("No game running — press New game to start.", "info", 3400);
+    return;
+  }
 
   const piece = chess.get(orig);
   const isPromotion = piece && piece.type === "p" && (dest[1] === "8" || dest[1] === "1");
@@ -959,6 +976,7 @@ function renderDonors(donors, workers) {
 let reviewBusy = false;
 
 function clearReview() {
+  if (!els.reviewBtn) return;
   els.reviewBadge.textContent = "idle";
   els.reviewBtn.disabled = true;
   els.reviewBtnLabel.textContent = "Review the game";
@@ -973,6 +991,7 @@ function clearReview() {
 }
 
 function updateReviewAvailability() {
+  if (!els.reviewBtn) return;
   const n = chess.history().length;
   const ready = !!currentUser && n >= 2 && !reviewBusy;
   els.reviewBtn.disabled = !ready;
@@ -1183,14 +1202,14 @@ function wireEvents() {
     openDonate();
   });
 
-  els.approveWorkerBtn.addEventListener("click", handleManualApprove);
-  els.workerCodeInput.addEventListener("keydown", (e) => {
+  if (els.approveWorkerBtn) els.approveWorkerBtn.addEventListener("click", handleManualApprove);
+  if (els.workerCodeInput) els.workerCodeInput.addEventListener("keydown", (e) => {
     if (e.key === "Enter") { e.preventDefault(); handleManualApprove(); }
   });
-  els.workerAuthAllow.addEventListener("click", () => handleWorkerAuthDecision(true));
-  els.workerAuthDeny.addEventListener("click", () => handleWorkerAuthDecision(false));
+  if (els.workerAuthAllow) els.workerAuthAllow.addEventListener("click", () => handleWorkerAuthDecision(true));
+  if (els.workerAuthDeny) els.workerAuthDeny.addEventListener("click", () => handleWorkerAuthDecision(false));
 
-  els.reviewBtn.addEventListener("click", reviewGame);
+  if (els.reviewBtn) els.reviewBtn.addEventListener("click", reviewGame);
 
   els.authForm.addEventListener("submit", submitAuth);
   els.tabLogin.addEventListener("click", () => setAuthMode(true));
