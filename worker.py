@@ -148,7 +148,7 @@ def device_auth(server_url: str, open_browser: bool = False) -> str:
     print("   8Chess requires account authorization to donate CPU")
     print("=" * 60)
 
-    start = http_json(f"{base}/api/worker/device/start")
+    start = http_json(f"{base}/api/worker/device/start", payload={})
     device_code = start["device_code"]
     user_code = start["user_code"]
     verify_url = start.get("verify_url") or f"{base}/?worker={user_code}"
@@ -347,9 +347,9 @@ def main():
 
     token = (args.token or "").strip()
     if not token:
-        token = device_auth(args.server, open_browser=args.open)
+        token = device_auth(args.server, open_browser=args.open_browser)
         if not token:
-            token = device_auth(args.server, open_browser=args.open)
+            token = device_auth(args.server, open_browser=args.open_browser)
         if not token:
             print("[!] Could not authorize this machine.")
             sys.exit(1)
