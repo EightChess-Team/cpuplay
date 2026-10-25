@@ -1001,6 +1001,9 @@ button:disabled { cursor: not-allowed; opacity: 0.45; }
   }
 }
 
+/* ============ ORG BRANDING ============ */
+.logo-img { width: 30px; height: 30px; border-radius: 8px; display: block; flex: 0 0 auto; }
+
 /* ============ WORKER AUTHORIZATION (device flow) ============ */
 .toast.success .t-dot { background: var(--lime); }
 
