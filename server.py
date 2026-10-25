@@ -582,13 +582,16 @@ async def handle_stats(request):
         }
         for w in worker_pool.workers.values()
     ]
-    return web.json_response({
+    resp = web.json_response({
         "ok": True,
         "workers_online": len(active_workers),
         "workers": active_workers,
         "tunnel_url": tunnel_url,
         **stats
     })
+    resp.headers["Access-Control-Allow-Origin"] = "*"
+    resp.headers["Cache-Control"] = "no-store"
+    return resp
 
 async def handle_worker_token(request):
     token = request.headers.get("Authorization", "").replace("Bearer ", "").strip()
